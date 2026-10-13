@@ -1,0 +1,70 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: #000; font-family: "Segoe UI", Tahoma, Arial, sans-serif; user-select: none; }
+#game { display: block; position: fixed; inset: 0; }
+
+#hud { position: fixed; inset: 0; pointer-events: none; color: #f3e9c6; text-shadow: 0 1px 2px #000; }
+
+#radar { position: absolute; top: 14px; left: 14px; border-radius: 50%; background: rgba(10, 14, 10, 0.55); border: 2px solid rgba(255, 255, 255, 0.25); }
+
+#topbar { position: absolute; top: 12px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 14px; font-weight: 700; }
+#topbar .team { display: flex; gap: 8px; align-items: center; padding: 4px 12px; background: rgba(0, 0, 0, 0.45); border-radius: 4px; font-size: 22px; }
+#topbar .ct { color: #8ec5ff; }
+#topbar .t { color: #f2c46d; }
+#topbar .label { font-size: 13px; opacity: 0.8; }
+#timer { font-size: 26px; padding: 2px 14px; background: rgba(0, 0, 0, 0.55); border-radius: 4px; min-width: 84px; text-align: center; }
+#timer.low { color: #ff5a4a; }
+#round-info { position: absolute; top: 56px; left: 50%; transform: translateX(-50%); font-size: 13px; opacity: 0.85; }
+
+#crosshair { --gap: 6px; position: absolute; top: 50%; left: 50%; width: 0; height: 0; }
+#crosshair i { position: absolute; background: #6cff6c; box-shadow: 0 0 1px #000; }
+#crosshair .t, #crosshair .b { width: 2px; height: 9px; left: -1px; }
+#crosshair .l, #crosshair .r { width: 9px; height: 2px; top: -1px; }
+#crosshair .t { bottom: var(--gap); }
+#crosshair .b { top: var(--gap); }
+#crosshair .l { right: var(--gap); }
+#crosshair .r { left: var(--gap); }
+
+#hitmarker { position: absolute; top: 50%; left: 50%; width: 22px; height: 22px; transform: translate(-50%, -50%) rotate(45deg); opacity: 0; }
+#hitmarker::before, #hitmarker::after { content: ""; position: absolute; background: #fff; }
+#hitmarker::before { left: 10px; top: 0; width: 2px; height: 22px; }
+#hitmarker::after { top: 10px; left: 0; width: 22px; height: 2px; }
+#hitmarker.kill::before, #hitmarker.kill::after { background: #ff3b3b; }
+
+#damage { position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse at center, transparent 45%, rgba(200, 0, 0, 0.75) 100%); }
+
+#killfeed { position: absolute; top: 14px; right: 14px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+#killfeed div { background: rgba(0, 0, 0, 0.55); padding: 4px 10px; border-radius: 3px; font-size: 14px; }
+#killfeed .you { color: #8ec5ff; }
+#killfeed .bot { color: #f2c46d; }
+#killfeed .hs { color: #ff6a5a; font-weight: 700; }
+
+#center-msg { position: absolute; top: 30%; left: 50%; transform: translateX(-50%); font-size: 40px; font-weight: 800; letter-spacing: 2px; text-align: center; opacity: 0; transition: opacity 0.25s; white-space: nowrap; }
+#center-msg.show { opacity: 1; }
+#center-msg small { display: block; font-size: 18px; font-weight: 500; letter-spacing: 0; margin-top: 6px; }
+
+#health-box, #ammo-box, #kills-box { position: absolute; bottom: 18px; background: rgba(0, 0, 0, 0.45); padding: 6px 16px; border-radius: 4px; font-weight: 700; }
+#health-box { left: 18px; font-size: 34px; }
+#health-box .icon { color: #f3e9c6; margin-right: 10px; }
+#health-box.low { color: #ff5a4a; }
+#ammo-box { right: 18px; font-size: 34px; }
+#ammo-box #weapon-name { font-size: 14px; opacity: 0.75; margin-right: 12px; vertical-align: middle; }
+#ammo-box .sep { opacity: 0.5; margin: 0 4px; }
+#ammo-box #reserve { font-size: 22px; opacity: 0.8; }
+#kills-box { left: 50%; transform: translateX(-50%); font-size: 15px; }
+
+#overlay { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(8, 10, 14, 0.72); color: #eee; z-index: 10; }
+#overlay.hidden { display: none; }
+#overlay .panel { text-align: center; max-width: 520px; padding: 16px; }
+#overlay h1 { font-size: 56px; margin: 0; letter-spacing: 4px; color: #f2c46d; }
+#overlay h1 span { color: #8ec5ff; margin-left: 12px; }
+#overlay .sub { opacity: 0.8; margin-top: 4px; }
+#overlay button { margin: 22px 0; font-size: 20px; font-weight: 700; padding: 14px 36px; border: none; border-radius: 4px; background: #f2c46d; color: #1a1408; cursor: pointer; letter-spacing: 2px; }
+#overlay button:hover { background: #ffd788; }
+#overlay .controls { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 22px; text-align: left; font-size: 14px; opacity: 0.9; }
+#overlay .controls b { display: inline-block; min-width: 76px; color: #8ec5ff; }
+#overlay .hint { font-size: 13px; opacity: 0.65; margin-top: 18px; }
+
+@media (max-width: 600px) {
+  #overlay h1 { font-size: 34px; }
+  #radar { width: 110px; height: 110px; }
+}
