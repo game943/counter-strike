@@ -109,7 +109,8 @@ html, body { margin: 0; color-scheme: dark; height: 100%; overflow: hidden; back
       <button id="play">CLICK TO PLAY</button>
       <div class="controls">
         <div><b>W A S D</b> Move</div>
-        <div><b>Mouse</b> Aim / Shoot</div>
+        <div><b>Left click</b> Shoot</div>
+        <div><b>Right click</b> Aim down sights</div>
         <div><b>Space</b> Jump</div>
         <div><b>Shift</b> Walk (more accurate)</div>
         <div><b>C / Ctrl</b> Crouch</div>
@@ -539,8 +540,8 @@ function showHit(kill) {
 //  Weapons + view-model
 // ============================================================
 const WEAPONS = {
-  rifle: { name: 'RIFLE', mag: 30, reserve: 90, rate: 0.1, auto: true, dmg: 34, reload: 2.3, spread: 0.004, recoil: 0.011, kick: 0.016, speed: 6.0 },
-  pistol: { name: 'PISTOL', mag: 12, reserve: 48, rate: 0.17, auto: false, dmg: 27, reload: 1.6, spread: 0.006, recoil: 0.02, kick: 0.022, speed: 6.5 },
+  rifle: { name: 'RIFLE', mag: 30, reserve: 90, rate: 0.1, auto: true, dmg: 34, reload: 2.3, spread: 0.004, recoil: 0.011, kick: 0.016, speed: 6.0, adsFov: 45, adsY: -0.044 },
+  pistol: { name: 'PISTOL', mag: 12, reserve: 48, rate: 0.17, auto: false, dmg: 27, reload: 1.6, spread: 0.006, recoil: 0.02, kick: 0.022, speed: 6.5, adsFov: 58, adsY: -0.03 },
 };
 const PART_MULT = { head: 4, body: 1, legs: 0.75 };
 
@@ -598,7 +599,8 @@ const inventory = {
 let current = inventory.rifle;
 const VM_BASE = new THREE.Vector3(0.19, -0.2, -0.56);
 
-const weaponState = { cooldown: 0, reloading: 0, switching: 0, recoil: 0, kickAnim: 0, flashTime: 0, bob: 0 };
+const weaponState = { cooldown: 0, reloading: 0, switching: 0, recoil: 0, kickAnim: 0, flashTime: 0, bob: 0, ads: 0 };
+let aiming = false; // right mouse held
 
 function setWeapon(key) {
   const next = inventory[key];
@@ -974,7 +976,7 @@ function currentSpread() {
   else if (player.speed > 0.5) s += 0.008;
   if (!player.onGround) s += 0.09;
   if (player.eye < 1.4) s *= 0.65;
-  return s;
+  return s * (1 - 0.6 * weaponState.ads);
 }
 
 // ============================================================
@@ -997,15 +999,22 @@ addEventListener('blur', () => { for (const k in keys) keys[k] = false; mouseDow
 
 document.addEventListener('mousemove', e => {
   if (!locked) return;
-  player.yaw -= e.movementX * SENS;
-  player.pitch = clamp(player.pitch - e.movementY * SENS, -1.5, 1.5);
+  const sens = SENS * camera.fov / 75; // slower turning while zoomed
+  player.yaw -= e.movementX * sens;
+  player.pitch = clamp(player.pitch - e.movementY * sens, -1.5, 1.5);
 });
 document.addEventListener('mousedown', e => {
-  if (!locked || e.button !== 0) return;
+  if (!locked) return;
+  if (e.button === 2) { aiming = true; return; }
+  if (e.button !== 0) return;
   mouseDown = true;
   fire();
 });
-document.addEventListener('mouseup', e => { if (e.button === 0) mouseDown = false; });
+document.addEventListener('mouseup', e => {
+  if (e.button === 0) mouseDown = false;
+  if (e.button === 2) aiming = false;
+});
+document.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('wheel', () => { if (locked) setWeapon(current === inventory.rifle ? 'pistol' : 'rifle'); });
 
 hud.play.addEventListener('click', () => {
@@ -1019,7 +1028,7 @@ document.addEventListener('pointerlockchange', () => {
   locked = document.pointerLockElement === renderer.domElement;
   hud.overlay.classList.toggle('hidden', locked);
   if (locked && game.state === 'menu') startRound();
-  if (!locked) { mouseDown = false; hud.play.textContent = 'CLICK TO RESUME'; }
+  if (!locked) { mouseDown = false; aiming = false; hud.play.textContent = 'CLICK TO RESUME'; }
 });
 
 // ============================================================
@@ -1041,7 +1050,7 @@ function resetPlayer() {
   hud.health.textContent = 100;
   hud.healthBox.classList.remove('low');
   for (const w of Object.values(inventory)) { w.ammo = w.def.mag; w.reserve = w.def.reserve; }
-  Object.assign(weaponState, { cooldown: 0, reloading: 0, switching: 0.3, recoil: 0 });
+  Object.assign(weaponState, { cooldown: 0, reloading: 0, switching: 0.3, recoil: 0, ads: 0 });
   current.model.visible = false;
   current = inventory.rifle;
   current.model.visible = true;
@@ -1096,7 +1105,7 @@ function updatePlayer(dt) {
 
   const crouch = keys.KeyC || keys.ControlLeft;
   const walk = keys.ShiftLeft || keys.ShiftRight;
-  const speed = crouch ? 2.2 : walk ? 3 : current.def.speed;
+  const speed = (crouch ? 2.2 : walk ? 3 : current.def.speed) * (1 - 0.4 * weaponState.ads);
   const accel = player.onGround ? 12 : 2.5;
   const k = Math.min(1, accel * dt);
   player.vel.x += (wish.x * speed - player.vel.x) * k;
@@ -1148,7 +1157,15 @@ function updateWeapon(dt) {
     tilt = Math.sin(p * Math.PI) * 0.7;
   }
   if (ws.switching > 0) dip += ws.switching * 0.6;
-  model.position.set(VM_BASE.x + bobX, VM_BASE.y + bobY - dip, VM_BASE.z + ws.kickAnim * 0.05);
+  const canAim = aiming && player.alive && ws.reloading <= 0 && ws.switching <= 0;
+  ws.ads += ((canAim ? 1 : 0) - ws.ads) * Math.min(1, dt * 12);
+  const a = ws.ads, hip = 1 - a * 0.85;
+  camera.fov = 75 + (current.def.adsFov - 75) * a;
+  camera.updateProjectionMatrix();
+  model.position.set(
+    VM_BASE.x * (1 - a) + bobX * hip,
+    VM_BASE.y + (current.def.adsY - VM_BASE.y) * a + bobY * hip - dip,
+    VM_BASE.z - 0.16 * a + ws.kickAnim * 0.05 * hip);
   model.rotation.set(ws.kickAnim * 0.08 - tilt * 0.4, 0, tilt * 0.5);
   model.visible = player.alive;
 
@@ -1158,6 +1175,7 @@ function updateWeapon(dt) {
 
   const gap = 5 + currentSpread() * 260;
   hud.crosshair.style.setProperty('--gap', `${gap.toFixed(1)}px`);
+  hud.crosshair.style.opacity = 1 - Math.min(1, ws.ads * 1.5);
 }
 
 function updateHud(dt) {
@@ -1238,7 +1256,7 @@ function frame() {
 frame();
 
 // Handy for debugging from the browser console.
-window.cs = { game, player, bots, inventory };
+window.cs = { game, player, bots, inventory, weaponState };
 
 </script>
 </body>

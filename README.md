@@ -11,7 +11,7 @@ they get faster and more accurate.
 ## Features
 
 - First-person movement: run, walk, crouch, jump, and climb onto crates
-- Rifle (full-auto) and pistol (semi-auto) with recoil, spread, reloads and ammo
+- Rifle (full-auto) and pistol (semi-auto) with recoil, spread, reloads, ammo and aim-down-sights
 - Hit zones: headshots kill in one hit, leg shots do less damage
 - Bots that patrol, react to gunfire, chase your last known position, strafe and fire in bursts
 - Round system with CT/T score, round timer, kill feed, radar, hit markers and damage flash
@@ -24,6 +24,7 @@ they get faster and more accurate.
 | W A S D / arrows | Move |
 | Mouse | Aim |
 | Left click | Shoot (hold for rifle auto-fire) |
+| Right click (hold) | Aim down sights: zoom in, tighter spread, slower movement |
 | Space | Jump |
 | Shift | Walk (more accurate) |
 | C / Ctrl | Crouch (most accurate) |
