@@ -883,7 +883,10 @@ document.addEventListener('wheel', () => { if (locked) setWeapon(current === inv
 
 hud.play.addEventListener('click', () => {
   audio().resume();
-  renderer.domElement.requestPointerLock();
+  try {
+    const p = renderer.domElement.requestPointerLock();
+    if (p && p.catch) p.catch(() => { hud.play.textContent = 'CLICK AGAIN TO PLAY'; });
+  } catch { hud.play.textContent = 'CLICK AGAIN TO PLAY'; }
 });
 document.addEventListener('pointerlockchange', () => {
   locked = document.pointerLockElement === renderer.domElement;
