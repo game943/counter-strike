@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Counter Strike Web</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="hud">
+    <canvas id="radar" width="170" height="170"></canvas>
+
+    <div id="topbar">
+      <div class="team ct"><span class="label">CT</span><span id="scoreCT">0</span></div>
+      <div id="timer">1:55</div>
+      <div class="team t"><span id="scoreT">0</span><span class="label">T</span></div>
+    </div>
+    <div id="round-info">Round <span id="round">1</span> · Enemies left: <span id="enemies">0</span></div>
+
+    <div id="crosshair"><i class="t"></i><i class="b"></i><i class="l"></i><i class="r"></i></div>
+    <div id="hitmarker"></div>
+    <div id="damage"></div>
+    <div id="killfeed"></div>
+    <div id="center-msg"></div>
+
+    <div id="health-box"><span class="icon">+</span><span id="health">100</span></div>
+    <div id="ammo-box">
+      <span id="weapon-name">RIFLE</span>
+      <span id="ammo">30</span><span class="sep">/</span><span id="reserve">90</span>
+    </div>
+    <div id="kills-box">Kills: <span id="kills">0</span></div>
+  </div>
+
+  <div id="overlay">
+    <div class="panel">
+      <h1>COUNTER<span>STRIKE</span></h1>
+      <p class="sub">Web edition. Counter-Terrorists vs. bots.</p>
+      <button id="play">CLICK TO PLAY</button>
+      <div class="controls">
+        <div><b>W A S D</b> Move</div>
+        <div><b>Mouse</b> Aim / Shoot</div>
+        <div><b>Space</b> Jump</div>
+        <div><b>Shift</b> Walk (more accurate)</div>
+        <div><b>C / Ctrl</b> Crouch</div>
+        <div><b>R</b> Reload</div>
+        <div><b>1 / 2</b> Rifle / Pistol</div>
+        <div><b>Esc</b> Pause</div>
+      </div>
+      <p class="hint">Eliminate every terrorist before the timer runs out. Headshots are one-hit kills.</p>
+    </div>
+  </div>
+
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+  </script>
+  <script type="module" src="game.js"></script>
+</body>
+</html>
